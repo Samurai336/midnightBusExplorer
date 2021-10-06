@@ -1,8 +1,7 @@
-const { ServiceBusAdministrationClient  } = require("@azure/service-bus");
 const {homedir} = require('os');
 const fs = require('fs');
 const defaultConfigPath = `${homedir()}/.midnightServiceBus.config`;
-const QueueOperations = require("./queueOperations.js")
+const QueueOperations = require("./queueOperations.js");
 
 const setConnectionsString = ({operationArgs}) => {
   let config = {}
@@ -51,13 +50,15 @@ const listConfiguredConnections = ({configPath = defaultConfigPath}) => {
 const processServiceBusAction = async ({inputArgs}) => {
   const [connectionSettingName, busAction] = inputArgs;
   const serviceBusConnectionString = loadConnectionString({connectionSettingName}); 
-  const serviceBusAdministrationClient = new ServiceBusAdministrationClient(serviceBusConnectionString);
+  const queueOperations = new QueueOperations(serviceBusConnectionString);
   const operationArgs = inputArgs.slice(2);
-  const queueOperations = new QueueOperations(serviceBusAdministrationClient);
 
   switch(busAction) {
     case 'ListQueues':
       await queueOperations.ListQueues({operationArgs})
+      break;
+    case 'peekQueue': 
+      await queueOperations.PeekMessageQueue({operationArgs});
       break;
     default:
       return;
