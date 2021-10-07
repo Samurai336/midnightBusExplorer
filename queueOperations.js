@@ -58,9 +58,9 @@ class QueueOperations {
 
     const outputObject = {};
 
-    outputObject[operationArgs] = {}
-    outputObject[operationArgs][submessageQueue] = messagesInSubqueue;
-    const outputString = JSON.stringify(outputObject); 
+    outputObject[queueId] = {}
+    outputObject[queueId][submessageQueue] = messagesInSubqueue;
+    const outputString = JSON.stringify(outputObject, null, 4);
     console.log(outputString);
 
     if(outputToFile) {

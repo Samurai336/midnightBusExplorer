@@ -63,7 +63,7 @@ const processServiceBusAction = async ({inputArgs}) => {
     default:
       return;
   }
-
+  return;
 }
 
 async function main() {
@@ -78,8 +78,8 @@ async function main() {
       listConfiguredConnections({});
       return;
   }
-
   await processServiceBusAction({inputArgs});
+  process.exit(0);
 };
 
 main().catch((err) => {
