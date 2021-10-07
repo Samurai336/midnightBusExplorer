@@ -72,7 +72,7 @@ class QueueOperations {
   async SendMessages({ operationArgs }) {
     const [queueId, filePathToMessages] = operationArgs
     const operationOptions = buildOperationOptions({ operationArgs: operationArgs.slice(2) });
-    const delayBetweenSends = operationOptions.delayBetweenSends ? (operationOptions.delayBetweenSends * 1000) : 2000;
+    const delayBetweenSends = operationOptions.delayBetweenSends ? (operationOptions.delayBetweenSends * 1000) : 10000;
     let messagesToSend = {};
 
     try {
