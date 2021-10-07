@@ -8,13 +8,14 @@
       "type": "pwa-node",
       "request": "launch",
       "name": "Launch Program",
-      //"console": "integratedTerminal",
+      "console": "integratedTerminal",
       "skipFiles": [
         "<node_internals>/**"
       ],
       "program": "${workspaceFolder}/index.js",
        // "args": ["edBus", "ListQueues", "showQueueCounts", "true"]
-       "args": ["edBus", "peekQueue", "service-payment-plans"] //, "outputToFile", "\"./testOutPut/DLQFile.json\""]
+       //args": ["edBus", "peekQueue", "service-payment-plans"] //, "outputToFile", "\"./testOutPut/DLQFile.json\""]
+       //"args": ["edBus", "sendMessages", "service-payment-plans", "./testInput/someJsonStuff.json"]
       //"args": ["listConfig"]
     }
   ]

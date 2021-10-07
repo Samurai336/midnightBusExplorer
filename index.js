@@ -60,6 +60,9 @@ const processServiceBusAction = async ({inputArgs}) => {
     case 'peekQueue': 
       await queueOperations.PeekMessageQueue({operationArgs});
       break;
+    case 'sendMessages': 
+      await queueOperations.SendMessages({operationArgs});
+      break;
     default:
       return;
   }

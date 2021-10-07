@@ -9,6 +9,7 @@
   "author": "",
   "license": "GPL-3.0-or-later",
   "dependencies": {
-    "@azure/service-bus": "^7.3.0"
+    "@azure/service-bus": "^7.3.0",
+    "uuid": "^8.3.2"
   }
 }
