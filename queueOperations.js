@@ -1,3 +1,5 @@
+const fs = require('fs');
+const { ServiceBusClient, ServiceBusAdministrationClient  } = require("@azure/service-bus");
 
 const buildOperationOptions = ({operationArgs}) => {
   let operationOptions = {};
@@ -13,13 +15,14 @@ const buildOperationOptions = ({operationArgs}) => {
 };
 
 class QueueOperations {
-  constructor(serviceBusClient) {
-    this.serviceBusClient = serviceBusClient;
+  constructor(serviceBusConnectionString) {
+    this.serviceBusAdministrationClient = new ServiceBusAdministrationClient(serviceBusConnectionString);
+    this.serviceBusClient = new ServiceBusClient(serviceBusConnectionString);
   }
 
   async ListQueues({operationArgs}) {
-    const queuesIterator = await this.serviceBusClient.listQueuesRuntimeProperties();
     const operationOptions = buildOperationOptions({operationArgs});
+    const queuesIterator = await this.serviceBusAdministrationClient.listQueuesRuntimeProperties();
     
     for await (const q of queuesIterator) {
       let queueDetails =  `${q.name}`
@@ -28,6 +31,44 @@ class QueueOperations {
         queueDetails = ` ${queueDetails}: active: ${q.activeMessageCount} | DLQ: ${q.deadLetterMessageCount}`;
       }
       console.log(queueDetails)
+    }
+  }
+
+  async PeekMessageQueue({operationArgs}) {
+    const [queueId] = operationArgs
+    const operationOptions = buildOperationOptions({operationArgs: operationArgs.slice(1)});
+    const numberOfMessages = operationOptions.numberOfMessages ? operationOptions.numberOfMessages : 10;
+    const messagesFromIndex = operationOptions.messagesFromIndex ? operationOptions.messagesFromIndex : 0;
+    const submessageQueue = operationOptions.subMesageQueue ? operationOptions.subMesageQueue : "deadLetter";
+    const outputToFile = operationOptions.outputToFile;
+    const messagesInSubqueue = [];
+
+    const receiver = this.serviceBusClient.createReceiver(queueId, {
+      receiveMode: "peekLock",
+      subQueueType: submessageQueue
+    });
+
+    const messages = await receiver.peekMessages(numberOfMessages, {
+      messagesFromIndex
+    });
+
+    for(let i = 0; i < messages.length; i = i + 1){
+      messagesInSubqueue.push(messages[i]);
+    }
+
+    const outputObject = {};
+
+    outputObject[queueId] = {}
+    outputObject[queueId][submessageQueue] = messagesInSubqueue;
+    const outputString = JSON.stringify(outputObject, null, 4);
+    console.log(outputString);
+
+    if(outputToFile) {
+      try {
+        fs.writeFileSync(outputToFile, JSON.stringify(outputObject));
+      } catch(err) {
+        console.log(`coudld not output data: ${err}`); 
+      }
     }
   }
 }
