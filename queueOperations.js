@@ -1,6 +1,7 @@
 const fs = require('fs');
 const { ServiceBusClient, ServiceBusAdministrationClient } = require("@azure/service-bus");
 const BuildCommandBatchesFromJson = require("./BuildCommandsFromJson.js");
+const _uniqBy = require("lodash.uniqby");
 
 const buildOperationOptions = ({ operationArgs }) => {
   let operationOptions = {};
@@ -60,7 +61,7 @@ class QueueOperations {
     console.log("sending messages");
     for (let i = 0; i < commandsFromFiles.length; i = i + 1) {
       const commandsInstructions = commandsFromFiles[i];
-      await this._sendCommandBatches({commandsInstructions});
+      await this._sendCommandBatches({ commandsInstructions });
       console.log(`Chunk ${i + 1} of ${commandsFromFiles.length} sent`)
       await sleep(delayBetweenSends);
     }
@@ -72,6 +73,8 @@ class QueueOperations {
     const numberOfMessages = operationOptions.numberOfMessages ? operationOptions.numberOfMessages : 10;
     const messagesFromIndex = operationOptions.messagesFromIndex ? operationOptions.messagesFromIndex : 0;
     const submessageQueue = operationOptions.subMesageQueue ? operationOptions.subMesageQueue : "deadLetter";
+    const formatForResend = operationOptions.formatForResend ? operationOptions.formatForResend : false;
+    const filterSubject = operationOptions.filterSubject ? operationOptions.filterSubject : false;
     const outputToFile = operationOptions.outputToFile;
     const messagesInSubqueue = [];
 
@@ -80,39 +83,81 @@ class QueueOperations {
       subQueueType: submessageQueue
     });
 
-    const messages = await receiver.peekMessages(numberOfMessages, {
-      messagesFromIndex
-    });
+
+    const messages = await this._getMessagesFromSubQueue({ receiver, numberOfMessages, messagesFromIndex })
+
 
     for (let i = 0; i < messages.length; i = i + 1) {
-      messagesInSubqueue.push(messages[i]);
+      const message = messages[i];
+      if(filterSubject !== false) {
+        const {subject} = message;
+        if(subject.includes(filterSubject) === false){
+          continue;
+        }
+      }
+      messagesInSubqueue.push(message);
     }
 
     const outputObject = {};
 
     outputObject[queueId] = {}
     outputObject[queueId][submessageQueue] = messagesInSubqueue;
-    const outputString = JSON.stringify(outputObject, null, 4);
-    console.log(outputString);
+    console.log(JSON.stringify(outputObject, null, 4));
 
     if (outputToFile) {
       try {
-        fs.writeFileSync(outputToFile, JSON.stringify(outputObject));
+        let dataToFileWrite = formatForResend ? this._formatForResend({ messagesForFormatting: messagesInSubqueue }) : outputObject;
+
+        fs.writeFileSync(outputToFile, JSON.stringify(dataToFileWrite, null, 4));
       } catch (err) {
         console.log(`coudld not output data: ${err}`);
       }
     }
   }
 
-  async _sendCommandBatches({commandsInstructions}){
-    const {queueName, commandsToSend} = commandsInstructions;
+  async _getMessagesFromSubQueue({ receiver, numberOfMessages, messagesFromIndex }) {
+    let messages = [];
+    let peekBatch = [];
+
+    // this is goofy because it does not work the way the docs describe it and M$ has no examples.
+    // https://docs.microsoft.com/en-us/javascript/api/@azure/service-bus/servicebusreceiver?view=azure-node-latest#peekMessages_number__PeekMessagesOptions_
+    do {
+        peekBatch = await receiver.peekMessages(numberOfMessages, {
+        messagesFromIndex
+      });
+      messages = messages.concat(peekBatch);
+    } while (messages.length < numberOfMessages && peekBatch.length !== 0);
+
+    messages = _uniqBy(messages, 'messageId');
+
+    return messages;
+  }
+
+  _formatForResend({ messagesForFormatting }) {
+    let resendableOutPut = {
+      messages: []
+    }
+
+    for (let i = 0; i < messagesForFormatting.length; i = i + 1) {
+      const { body, subject} = messagesForFormatting[i];
+      const resendMessage = {
+        commandSubject: subject,
+        commandBody: body
+      };
+      resendableOutPut.messages.push(resendMessage);
+    }
+    return resendableOutPut;
+  }
+
+  async _sendCommandBatches({ commandsInstructions }) {
+    const { queueName, commandsToSend } = commandsInstructions;
     const sender = this.serviceBusClient.createSender(queueName);
 
     try {
       // Tries to send all messages in a single batch.
       // Will fail if the messages cannot fit in a batch.
       // await sender.sendMessages(messages);
-  
+
       // create a batch object
       let batch = await sender.createMessageBatch();
       for (let i = 0; i < commandsToSend.length; i++) {
@@ -123,10 +168,10 @@ class QueueOperations {
           // if it fails to add the message to the current batch
           // send the current batch as it is full
           await sender.sendMessages(batch);
-  
+
           // then, create a new batch 
           batch = await sender.createMessageBatch();
-  
+
           // now, add the message failed to be added to the previous batch to this batch
           if (!batch.tryAddMessage(commandsToSend[i])) {
             // if it still can't be added to the batch, the message is probably too big to fit in a batch
@@ -137,7 +182,7 @@ class QueueOperations {
       // Send the last created batch of messages to the queue
       await sender.sendMessages(batch);
       await sender.close();
-    }  catch (err) {
+    } catch (err) {
       console.log(`Error Sending data to ${queueName}: ${err}`);
     }
   }
