@@ -13,7 +13,8 @@
         "<node_internals>/**"
       ],
       "program": "${workspaceFolder}/index.js",
-      "args": ["edBus", "ListQueues", "showQueueCounts", "true"]
+      //"args": ["edBus", "monitor", "refresh", "2"]
+      "args": ["edBus", "ListQueues"]
       // "args": ["usPrd", "peekQueue", "service-payment-plans", "outputToFile", "\"./testOutPut/DLQFirstInstallmentIssues.json\"", "filterSubject","\"ProcessFirstInstallmentPayment\"", "numberOfMessages", "600"]
        //"args": ["edBus", "peekQueue", "service-payment-plans", "formatForResend", "true", "filterSubject","\"ApplyCashReward+Command\"", "outputToFile", "\"./testOutPut/DLQFileResendableFilter.json\""]
        //"args": ["edBus", "sendMessages", "service-payment-plans", "./testInput/someJsonStuff.json"]

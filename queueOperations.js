@@ -28,9 +28,24 @@ class QueueOperations {
     this.serviceBusClient = new ServiceBusClient(serviceBusConnectionString);
   }
 
+  async Monitor({ operationArgs }){
+    const operationOptions = buildOperationOptions({ operationArgs });
+    const refreshSpeed = operationOptions.refresh ? (operationOptions.refresh * 1000) : 2000;
+    const argsForMonitor = ["showQueueCounts", "true", "streamMode", "true"];
+
+    do{
+      const queueDetails = await this.ListQueues({operationArgs: argsForMonitor});
+      console.clear();
+      this._outPutDataToScreen({dataToShowOnScreen: queueDetails});
+      await sleep(refreshSpeed);
+    }while(true);
+  }
+
   async ListQueues({ operationArgs }) {
     const operationOptions = buildOperationOptions({ operationArgs });
     const queuesIterator = await this.serviceBusAdministrationClient.listQueuesRuntimeProperties();
+    const streamMode = operationOptions.streamMode ? operationOptions.streamMode : false;
+    const queueDetailsToPrint = [];
 
     for await (const q of queuesIterator) {
       let queueDetails = `${q.name}`
@@ -38,14 +53,26 @@ class QueueOperations {
       if (operationOptions.showQueueCounts) {
         queueDetails = ` ${queueDetails}: active: ${q.activeMessageCount} | DLQ: ${q.deadLetterMessageCount}`;
       }
-      console.log(queueDetails)
+      queueDetailsToPrint.push(queueDetails);
+    }
+    if(streamMode){
+      return queueDetailsToPrint;
+    }
+    this._outPutDataToScreen({dataToShowOnScreen: queueDetailsToPrint});
+    return queueDetailsToPrint;
+  }
+
+  _outPutDataToScreen({dataToShowOnScreen}){
+    for(let i = 0; i < dataToShowOnScreen.length; i = i + 1){
+      const dataScreenLine = dataToShowOnScreen[i];
+      console.log(dataScreenLine);
     }
   }
 
   async SendMessages({ operationArgs }) {
     const [queueId, filePathToMessages] = operationArgs
     const operationOptions = buildOperationOptions({ operationArgs: operationArgs.slice(2) });
-    const delayBetweenSends = operationOptions.delayBetweenSends ? (operationOptions.delayBetweenSends * 1000) : 2000;
+    const delayBetweenSends = operationOptions.delayBetweenSends ? (operationOptions.delayBetweenSends * 1000) : 10000;
     let messagesToSend = {};
 
     try {
