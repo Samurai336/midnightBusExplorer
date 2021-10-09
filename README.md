@@ -9,7 +9,7 @@ Terminal tool for adminstration and maintenance of Azure Service Buses
 
 In the project root directory run the following to install globally
 
-`$ npm install -g ` p
+`$ npm install -g `
 
 # Configure
 
