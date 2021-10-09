@@ -1,13 +1,14 @@
 {
-  "name": "midnightservicebus",
-  "version": "1.0.0",
-  "description": "terminal service bus explorer",
-  "main": "index.js",
+  "name": "MidnightBusExplorer",
+  "version": "0.0.1",
+  "description": "Terminal tool for operation on azure service busses",
+  "preferGlobal": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Samurai336",
   "license": "GPL-3.0-or-later",
+  "bin": {"midnightbus": "./index.js"},
   "dependencies": {
     "@azure/service-bus": "^7.3.0",
     "@azure/storage-queue": "^12.7.0",

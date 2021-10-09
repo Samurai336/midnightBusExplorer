@@ -62,13 +62,6 @@ class QueueOperations {
     return queueDetailsToPrint;
   }
 
-  _outPutDataToScreen({dataToShowOnScreen}){
-    for(let i = 0; i < dataToShowOnScreen.length; i = i + 1){
-      const dataScreenLine = dataToShowOnScreen[i];
-      console.log(dataScreenLine);
-    }
-  }
-
   async SendMessages({ operationArgs }) {
     const [queueId, filePathToMessages] = operationArgs
     const operationOptions = buildOperationOptions({ operationArgs: operationArgs.slice(2) });
@@ -139,6 +132,13 @@ class QueueOperations {
       } catch (err) {
         console.log(`coudld not output data: ${err}`);
       }
+    }
+  }
+
+  _outPutDataToScreen({dataToShowOnScreen}){
+    for(let i = 0; i < dataToShowOnScreen.length; i = i + 1){
+      const dataScreenLine = dataToShowOnScreen[i];
+      console.log(dataScreenLine);
     }
   }
 
