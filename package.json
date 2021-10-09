@@ -1,16 +1,22 @@
 {
-  "name": "midnightservicebus",
-  "version": "1.0.0",
-  "description": "terminal service bus explorer",
-  "main": "index.js",
+  "name": "midnight-bus-explorer",
+  "version": "0.0.2",
+  "description": "Terminal tool for operation on azure service busses",
+  "preferGlobal": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Samurai336/midnightBusExplorer"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Samurai336",
   "license": "GPL-3.0-or-later",
+  "bin": {
+    "midnightbus": "./index.js"
+  },
   "dependencies": {
     "@azure/service-bus": "^7.3.0",
-    "@azure/storage-queue": "^12.7.0",
     "lodash.chunk": "^4.2.0",
     "lodash.uniqby": "^4.7.0",
     "uuid": "^8.3.2"

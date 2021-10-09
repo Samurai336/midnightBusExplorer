@@ -1,60 +1,17 @@
-const {homedir} = require('os');
-const fs = require('fs');
-const defaultConfigPath = `${homedir()}/.midnightServiceBus.config`;
+#!/usr/bin/env node
+'use strict';
+
 const QueueOperations = require("./queueOperations.js");
-
-const setConnectionsString = ({operationArgs}) => {
-  let config = {}
-
-  try {
-    if (fs.existsSync(defaultConfigPath)) {
-      let configData = fs.readFileSync(defaultConfigPath);
-      config = JSON.parse(configData);
-    }
-  } catch(err) {
-    console.log('Config not found: adding new config file'); 
-  }
-  
-  let [envName, connectionString ] = operationArgs; 
-
-  config[envName] = connectionString;
-
-  fs.writeFileSync(defaultConfigPath, JSON.stringify(config), );
-}
-
-const loadConnectionString = ({configPath = defaultConfigPath, connectionSettingName}) => {
-  try {
-    if (fs.existsSync(configPath)) {
-      let configData = fs.readFileSync(configPath);
-      let loadedConfig = JSON.parse(configData);
-      return loadedConfig[connectionSettingName]
-    }
-  } catch(err) {
-    throw new Error('Required');
-  }
-}
-
-const listConfiguredConnections = ({configPath = defaultConfigPath}) => {
-  try {
-    if (fs.existsSync(configPath)) {
-      const configData = fs.readFileSync(configPath);
-      const loadedConfig = JSON.parse(configData);
-      const configKeys =  Object.keys(loadedConfig);
-      console.log(`Available configs: ${configKeys}`)
-    }
-  } catch(err) {
-    throw new Error('Required');
-  }
-}
+const {  SetConnectionsString, ListConfiguredConnections, LoadConnectionString} = require("./programConfig.js");
 
 const processServiceBusAction = async ({inputArgs}) => {
   const [connectionSettingName, busAction] = inputArgs;
-  const serviceBusConnectionString = loadConnectionString({connectionSettingName}); 
+  const serviceBusConnectionString = LoadConnectionString({connectionSettingName}); 
   const queueOperations = new QueueOperations(serviceBusConnectionString);
   const operationArgs = inputArgs.slice(2);
 
   switch(busAction) {
-    case 'ListQueues':
+    case 'listQueues':
       await queueOperations.ListQueues({operationArgs})
       break;
     case "monitor":
@@ -78,10 +35,10 @@ async function main() {
 
   switch (action) {
     case "configure":
-      setConnectionsString({operationArgs: inputArgs.slice(1)});
+      SetConnectionsString({operationArgs: inputArgs.slice(1)});
       return;
     case "listConfig":
-      listConfiguredConnections({});
+      ListConfiguredConnections({});
       return;
   }
   await processServiceBusAction({inputArgs});
