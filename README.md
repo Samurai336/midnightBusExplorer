@@ -5,6 +5,8 @@ Terminal tool for adminstration and maintenance of Azure Service Buses
 
 `$ npm install midnight-bus-explorer -g` 
 
+note: We recomend nvm for managing and instillation of node. 
+
 ## Install local dev
 
 In the project root directory run the following to install globally
