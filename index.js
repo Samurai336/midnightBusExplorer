@@ -4,7 +4,7 @@
 const { Command } = require('commander');
 
 const QueueOperations = require("./queueOperations.js");
-const {  SetConnectionsString, ListConfiguredConnections, LoadConnectionString} = require("./programConfig.js");
+const {  GetAzCliConnections, SetConnectionsString, ListConfiguredConnections, LoadConnectionString } = require("./programConfig.js");
 
 const processServiceBusAction = async ({inputArgs}) => {
   const [connectionSettingName, busAction] = inputArgs;
@@ -39,6 +39,11 @@ async function main() {
   
   const configureCommand = program.command('configure')
     .description('Manage service bus connection configurations');
+
+  configureCommand
+    .command('get')
+    .description('Get service bus connections from azure cli')
+    .action(() => GetAzCliConnections().then(console.log));
 
   configureCommand
     .command('list')
@@ -86,9 +91,9 @@ async function main() {
   
   program.parse();
   
-  let inputArgs = process.argv.slice(2);
+  // let inputArgs = process.argv.slice(2);
 
-  await processServiceBusAction({inputArgs});
+  // await processServiceBusAction({inputArgs});
   process.exit(0);
 };
 

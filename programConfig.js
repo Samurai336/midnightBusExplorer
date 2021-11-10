@@ -1,7 +1,16 @@
 const {homedir} = require('os');
+const util = require('util');
+util.promisify(require('child_process').exec)
+const exec = util.promisify(require('child_process').exec)
 const fs = require('fs');
 
 const defaultConfigPath = `${homedir()}/.midnightServiceBus.config`;
+
+const GetAzCliConnections = () => {
+  console.log('here')
+  result = exec('ls');
+  return result;
+}
 
 const SetConnectionsString = (envName, connectionString) => {
     let config = {}
@@ -48,5 +57,6 @@ const SetConnectionsString = (envName, connectionString) => {
   module.exports = {
     SetConnectionsString,
     ListConfiguredConnections,
-    LoadConnectionString
+    LoadConnectionString,
+    GetAzCliConnections
   };
