@@ -3,7 +3,7 @@ const fs = require('fs');
 
 const defaultConfigPath = `${homedir()}/.midnightServiceBus.config`;
 
-const SetConnectionsString = ({operationArgs}) => {
+const SetConnectionsString = (envName, connectionString) => {
     let config = {}
   
     try {
@@ -14,8 +14,6 @@ const SetConnectionsString = ({operationArgs}) => {
     } catch(err) {
       console.log('Config not found: adding new config file'); 
     }
-    
-    let [envName, connectionString ] = operationArgs; 
   
     config[envName] = connectionString;
   

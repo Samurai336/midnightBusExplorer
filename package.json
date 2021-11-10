@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@azure/service-bus": "^7.3.0",
+    "commander": "^8.3.0",
     "lodash.chunk": "^4.2.0",
     "lodash.uniqby": "^4.7.0",
     "uuid": "^8.3.2"
