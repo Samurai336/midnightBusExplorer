@@ -87,16 +87,7 @@ async function main() {
   program.parse();
   
   let inputArgs = process.argv.slice(2);
-  const [action] = inputArgs;
 
-  // switch (action) {
-  //   case "configure":
-  //     SetConnectionsString({operationArgs: inputArgs.slice(1)});
-  //     return;
-  //   case "listConfig":
-  //     ListConfiguredConnections({});
-  //     return;
-  // }
   await processServiceBusAction({inputArgs});
   process.exit(0);
 };
